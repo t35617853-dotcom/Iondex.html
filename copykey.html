@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KEY</title>
+
+<style>
+body{
+margin:0;
+
+/* 🔥 IMAGEM PRINCIPAL (INTACTA) */
+background: url("https://i.imgur.com/WX3U92W.png") no-repeat center center fixed;
+background-size: cover;
+
+color:white;
+font-family:sans-serif;
+text-align:center;
+overflow:hidden;
+}
+
+/* 🔥 OPACIDADE */
+body::before{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.45);
+z-index:-2;
+}
+
+/* 🔥 IMAGEM DO CHÃO */
+body::after{
+content:"";
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+height:35%;
+background:url("https://i.imgur.com/cVrViMB.png") no-repeat center bottom;
+background-size:cover;
+z-index:-1;
+pointer-events:none;
+}
+
+/* 🔥 TÍTULO */
+.top{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+font-size:40px;
+color:#a855f7;
+text-shadow:0 0 10px #a855f7, 0 0 25px #7a00ff;
+}
+
+.top::after{
+content:"";
+display:block;
+width:140px;
+height:4px;
+background:#a855f7;
+margin:10px auto 0;
+box-shadow:0 0 12px #a855f7;
+}
+
+/* 🔥 CONTAINER */
+.container{
+position:absolute;
+top:55%;
+left:50%;
+transform:translate(-50%,-50%);
+}
+
+/* 🔥 CAIXA */
+.key-box{
+margin-bottom:30px;
+padding:18px 40px;
+border:2px solid #a855f7;
+border-radius:12px;
+box-shadow:0 0 20px rgba(168,85,247,0.6);
+display:inline-block;
+background:rgba(0,0,0,0.35);
+}
+
+/* 🔥 KEY ANIMADA */
+#keyText{
+font-size:18px;
+word-break:break-all;
+
+background: linear-gradient(90deg, #ff4dff, #a855f7, #7a00ff, #ff00cc, #a855f7);
+background-size:300%;
+
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+
+animation:keyGlow 3s linear infinite;
+
+text-shadow:
+0 0 10px rgba(255,0,255,0.6),
+0 0 25px rgba(168,85,247,0.7),
+0 0 40px rgba(122,0,255,0.8);
+}
+
+@keyframes keyGlow{
+0%{background-position:0%;}
+100%{background-position:300%;}
+}
+
+/* 🔥 BOTÃO */
+button{
+padding:18px 60px;
+border:none;
+border-radius:14px;
+background:#7a00ff;
+color:white;
+cursor:pointer;
+font-size:18px;
+box-shadow:0 0 20px #7a00ff;
+transition:0.3s;
+animation:glow 2s infinite;
+}
+
+@keyframes glow{
+0%{box-shadow:0 0 12px #7a00ff;}
+50%{box-shadow:0 0 35px #a855f7;}
+100%{box-shadow:0 0 12px #7a00ff;}
+}
+
+button:hover{
+transform:scale(1.07);
+}
+
+button.copied{
+background:#00c853;
+box-shadow:0 0 25px #00ff88;
+animation:none;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-3;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">KEY</div>
+
+<canvas id="bg"></canvas>
+
+<div class="container">
+
+<div class="key-box">
+<div id="keyText">Clique no botão</div>
+</div>
+
+<button id="btn" onclick="generateKey()">COPY KEY</button>
+
+</div>
+
+<script>
+
+/* 🔒 CONTROLE */
+let keyLocked = false;
+
+/* 🔑 GERAR KEY */
+function generateKey(){
+
+let now = Date.now();
+let lastTime = localStorage.getItem("lastKeyTime");
+
+/* ⏳ BLOQUEIO 2 HORAS */
+if(lastTime && (now - lastTime) < 2 * 60 * 60 * 1000){
+    document.getElementById("keyText").innerText = "AGUARDE 2H";
+    return;
+}
+
+/* 🔒 JÁ USOU */
+if(keyLocked){
+    document.getElementById("keyText").innerText = "KEY BLOQUEADA";
+    return;
+}
+
+/* 🔑 GERAR */
+let key = crypto.randomUUID();
+document.getElementById("keyText").innerText = key;
+
+/* 📋 COPIAR */
+navigator.clipboard.writeText(key);
+
+/* 💾 SALVAR TEMPO */
+localStorage.setItem("lastKeyTime", now);
+
+/* 🔒 BLOQUEAR */
+keyLocked = true;
+
+let btn = document.getElementById("btn");
+btn.innerText = "SUCCESS!";
+btn.classList.add("copied");
+btn.disabled = true;
+
+}
+
+/* PARTICLES */
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+for(let i=0;i<80;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2,
+dx:(Math.random()-0.5)*0.4,
+dy:(Math.random()-0.5)*0.4
+});
+}
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+particles.forEach(p=>{
+p.x+=p.dx;
+p.y+=p.dy;
+
+if(p.x<0||p.x>canvas.width)p.dx*=-1;
+if(p.y<0||p.y>canvas.height)p.dy*=-1;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fillStyle="#a855f7";
+ctx.fill();
+});
+
+requestAnimationFrame(animate);
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
