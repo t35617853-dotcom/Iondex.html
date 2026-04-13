@@ -169,8 +169,8 @@ z-index:-3;
 /* 🔒 CONTROLE */
 let keyLocked = false;
 
-/* 🔑 GERAR KEY */
-function generateKey(){
+/* 🔑 GERAR KEY (AGORA DO SERVIDOR) */
+async function generateKey(){
 
 let now = Date.now();
 let lastTime = localStorage.getItem("lastKeyTime");
@@ -187,23 +187,25 @@ if(keyLocked){
     return;
 }
 
-/* 🔑 GERAR */
-let key = crypto.randomUUID();
-document.getElementById("keyText").innerText = key;
+try{
+    let res = await fetch("https://sylax-key.onrender.com/getkey");
+    let data = await res.json();
 
-/* 📋 COPIAR */
-navigator.clipboard.writeText(key);
+    document.getElementById("keyText").innerText = data.key;
 
-/* 💾 SALVAR TEMPO */
-localStorage.setItem("lastKeyTime", now);
+    navigator.clipboard.writeText(data.key);
 
-/* 🔒 BLOQUEAR */
-keyLocked = true;
+    localStorage.setItem("lastKeyTime", now);
+    keyLocked = true;
 
-let btn = document.getElementById("btn");
-btn.innerText = "SUCCESS!";
-btn.classList.add("copied");
-btn.disabled = true;
+    let btn = document.getElementById("btn");
+    btn.innerText = "SUCCESS!";
+    btn.classList.add("copied");
+    btn.disabled = true;
+
+}catch{
+    document.getElementById("keyText").innerText = "ERRO SERVIDOR";
+}
 
 }
 
